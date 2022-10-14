@@ -1,18 +1,20 @@
 all:
-	g++ ast-no-penalty.cc -o ast-no-penalty -mavx2
-	g++ ast-penalty.cc -o ast-penalty -mavx2
+	g++ ast-no-penalty.cc -o ast-no-penalty
+	g++ ast-penalty.cc -o ast-penalty
 run:
-	@echo "Call sde64 -ast -- ast-no-penalty"
-	~/sde/sde64 -ast -- ast-no-penalty
-	@echo "avx-sse transition result:"
-	cat sde-avx-sse-transition-out.txt
-	mv sde-avx-sse-transition-out.txt sde-avx-sse-transition-out-no_penalty.txt
+	@echo "Run ast-penalty @avx2 on CPU 1, try to capture "ASSISTS.SSE_AVX_MIX" event"
+	emon -t0 -C "ASSISTS.SSE_AVX_MIX"  /usr/bin/taskset -c 1 ./ast-penalty |grep 'ASSISTS.SSE_AVX_MIX'
 	@echo ""
-	@echo "Call sde64 -ast -- ast-penalty"
-	~/sde/sde64 -ast -debugtrace -- ast-penalty
-	@echo "avx-sse transition result:"
-	cat sde-avx-sse-transition-out.txt
+	@echo "Run ast-no-penalty @avx2 on CPU 1, try to capture "ASSISTS.SSE_AVX_MIX" event"
+	emon -t0 -C "ASSISTS.SSE_AVX_MIX"  /usr/bin/taskset -c 1 ./ast-no-penalty |grep 'ASSISTS.SSE_AVX_MIX'
+	echo ""
+	@echo "Run ast-penalty @avx512 on CPU 1, try to capture "ASSISTS.SSE_AVX_MIX" event"
+	emon -t0 -C "ASSISTS.SSE_AVX_MIX"  /usr/bin/taskset -c 1 ./ast-penalty avx512 |grep 'ASSISTS.SSE_AVX_MIX'
+	@echo ""
+	@echo "Run ast-no-penalty @avx512 on CPU 1, try to capture "ASSISTS.SSE_AVX_MIX" event"
+	emon -t0 -C "ASSISTS.SSE_AVX_MIX"  /usr/bin/taskset -c 1 ./ast-no-penalty avx512 |grep 'ASSISTS.SSE_AVX_MIX'
+
 
 clean:
-	- rm sde* pin-tool-log.txt  ast-penalty ast-no-penalty
+	- rm ast-penalty ast-no-penalty
 
